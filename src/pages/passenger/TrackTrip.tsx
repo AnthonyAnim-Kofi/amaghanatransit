@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, Clock, Bus, Phone, MessageSquare } from "lucide-react";
+import { Navigation, Bus, Phone, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import LeafletMap from "@/components/LeafletMap";
 
 interface TripLocation {
   latitude: number;
@@ -20,22 +21,15 @@ const TrackTrip = () => {
   const tripId = searchParams.get("id");
   const [locations, setLocations] = useState<TripLocation[]>([]);
   const [trip, setTrip] = useState<any>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!tripId) return;
 
-    // Fetch trip details
     const fetchTrip = async () => {
-      const { data } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("id", tripId)
-        .single();
+      const { data } = await supabase.from("trips").select("*").eq("id", tripId).single();
       if (data) setTrip(data);
     };
 
-    // Fetch latest location
     const fetchLocations = async () => {
       const { data } = await supabase
         .from("trip_locations")
@@ -49,29 +43,23 @@ const TrackTrip = () => {
     fetchTrip();
     fetchLocations();
 
-    // Subscribe to real-time location updates
     const channel = supabase
       .channel(`trip-${tripId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "trip_locations",
-          filter: `trip_id=eq.${tripId}`,
-        },
-        (payload) => {
-          setLocations((prev) => [payload.new as TripLocation, ...prev.slice(0, 9)]);
-        }
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "trip_locations", filter: `trip_id=eq.${tripId}` },
+        (payload) => { setLocations((prev) => [payload.new as TripLocation, ...prev.slice(0, 9)]); }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [tripId]);
 
   const latestLocation = locations[0];
+
+  // Build route trail from location history
+  const routeTrail: [number, number][] = locations
+    .slice()
+    .reverse()
+    .map((l) => [l.latitude, l.longitude]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,33 +125,25 @@ const TrackTrip = () => {
               <div className="text-center py-8">
                 <Bus className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">Select a trip to track</p>
+                <p className="text-xs text-muted-foreground mt-1">Use ?id=trip_uuid in URL</p>
               </div>
             )}
           </motion.div>
         </aside>
 
-        {/* Map Area */}
-        <main ref={mapRef} className="flex-1 relative bg-secondary/30 min-h-[50vh] lg:min-h-[calc(100vh-4rem)] flex items-center justify-center">
-          {/* Map placeholder - Google Maps will be integrated with API key */}
-          <div className="text-center p-4">
-            <Navigation className="h-16 w-16 text-primary/30 mx-auto mb-4" />
-            <p className="text-muted-foreground text-lg">Live Map View</p>
-            <p className="text-sm text-muted-foreground">
-              {trip ? `${trip.origin} → ${trip.destination}` : "No trip selected"}
-            </p>
-            {latestLocation && (
-              <p className="text-xs text-primary mt-2">
-                📍 {latestLocation.latitude.toFixed(4)}, {latestLocation.longitude.toFixed(4)}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground mt-4 max-w-sm mx-auto">
-              Google Maps integration requires an API key. Add it in Lovable Cloud secrets to enable interactive maps.
-            </p>
-          </div>
+        {/* Map */}
+        <main className="flex-1 relative min-h-[50vh] lg:min-h-[calc(100vh-4rem)]">
+          <LeafletMap
+            center={latestLocation ? [latestLocation.latitude, latestLocation.longitude] : [6.7, -1.6]}
+            zoom={latestLocation ? 13 : 7}
+            route={routeTrail.length >= 2 ? routeTrail : undefined}
+            livePosition={latestLocation ? { lat: latestLocation.latitude, lng: latestLocation.longitude, speed: latestLocation.speed } : undefined}
+            className="h-full"
+          />
 
-          {/* Live indicator */}
+          {/* Live indicator overlay */}
           {latestLocation && (
-            <div className="glass-card p-3 absolute top-4 left-4 flex items-center gap-2">
+            <div className="glass-card p-3 absolute top-4 left-4 z-[1000] flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
               <span className="text-xs font-semibold text-success">LIVE</span>
               <span className="text-xs text-muted-foreground">
