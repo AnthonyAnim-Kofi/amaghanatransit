@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Bus, Search, User, Menu, X, LogOut } from "lucide-react";
+import { Bus, Search, User, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface NavbarProps {
   variant: "passenger" | "driver" | "landing";
@@ -12,7 +14,7 @@ interface NavbarProps {
 
 const passengerLinks = [
   { to: "/passenger/dashboard", label: "Dashboard" },
-  { to: "/passenger/book", label: "Book Trip" },
+  { to: "/passenger/search", label: "Find Trips" },
   { to: "/passenger/bookings", label: "My Bookings" },
   { to: "/passenger/history", label: "Trip History" },
   { to: "/passenger/wallet", label: "Wallet" },
@@ -44,7 +46,6 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4 md:gap-8">
-          {/* Mobile Menu */}
           {variant !== "landing" && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild className="md:hidden">
@@ -102,7 +103,6 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
             <span className="text-lg font-bold font-heading hidden sm:block">Transport Ghana</span>
           </Link>
 
-          {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-1">
             {links.map((link) => (
               <Link
@@ -122,17 +122,8 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
 
         {variant !== "landing" && (
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden lg:flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                placeholder="Search trips..."
-                className="bg-transparent text-sm outline-none w-40 placeholder:text-muted-foreground"
-              />
-            </div>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
-            </Button>
+            <ThemeToggle />
+            <NotificationDropdown />
             <div className="hidden md:flex items-center gap-2">
               <span className="text-sm font-medium">{displayName}</span>
             </div>
@@ -148,6 +139,12 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
             >
               <LogOut className="h-4 w-4" />
             </Button>
+          </div>
+        )}
+
+        {variant === "landing" && (
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
           </div>
         )}
       </div>

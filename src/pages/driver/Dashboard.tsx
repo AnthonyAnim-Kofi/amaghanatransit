@@ -5,10 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import AppSidebar from "@/components/AppSidebar";
 import StatCard from "@/components/StatCard";
+import DriverLocationSharing from "@/components/DriverLocationSharing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { LayoutDashboard, DollarSign, Wrench, Settings, Bus, Plus, Users, MapPin, Clock } from "lucide-react";
+import { LayoutDashboard, DollarSign, Settings, Bus, Plus, Users, MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -161,6 +161,9 @@ const DriverDashboard = () => {
                           <p className="text-xl font-bold text-success">GH₵ {Number(trip.price).toFixed(2)}</p>
                           <Badge className="bg-primary/20 text-primary border-0">{trip.status}</Badge>
                         </div>
+                      </div>
+                      <div className="mt-4">
+                        <DriverLocationSharing tripId={trip.id} />
                       </div>
                     </div>
                   ))}
