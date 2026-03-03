@@ -1,113 +1,120 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Plus, Download, Wrench, Gauge, Droplets, Disc, Settings2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bus, Wrench, Plus, Gauge } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
 
-const healthItems = [
-  { name: "Engine", status: "OPTIMAL (90%)", color: "text-success", icon: Settings2 },
-  { name: "Tires", status: "CHECK TREAD (30%)", color: "text-warning", icon: Gauge },
-  { name: "Oil Level", status: "HEALTHY (80%)", color: "text-success", icon: Droplets },
-  { name: "Brakes", status: "EXCELLENT (95%)", color: "text-success", icon: Disc },
-];
+type MaintenanceStatus = Database["public"]["Enums"]["maintenance_status"];
 
-const serviceHistory = [
-  { date: "Oct 12, 2023", type: "Brake Pad Replacement", sub: "Front and rear pads", provider: "AutoZone Accra", mileage: "42,150 km", cost: "GH₵ 850.00" },
-  { date: "Sep 05, 2023", type: "Full Synthetic Oil Change", sub: "Filter & gasket replacement", provider: "Shell Helix Service", mileage: "38,400 km", cost: "GH₵ 400.00" },
-  { date: "Jul 20, 2023", type: "Tire Rotation & Alignment", sub: "4-wheel computer alignment", provider: "Goodyear Kumasi", mileage: "32,200 km", cost: "GH₵ 320.00" },
-  { date: "May 15, 2023", type: "Air Conditioning Refill", sub: "Refrigerant recharge", provider: "Central Repairs", mileage: "25,100 km", cost: "GH₵ 250.00" },
-];
+const VehicleMaintenance = () => {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-const VehicleMaintenance = () => (
-  <div className="min-h-screen bg-background">
-    <Navbar variant="driver" userName="Kwame Mensah" />
-    <main className="max-w-6xl mx-auto p-6">
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold font-heading">Bus Maintenance</h1>
-            <p className="text-muted-foreground mt-1">Monitor real-time vehicle health and review service records.</p>
+  const { data: vehicles, isLoading } = useQuery({
+    queryKey: ["driver-vehicles", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vehicles")
+        .select("*")
+        .eq("driver_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const handleStatusUpdate = async (id: string, status: MaintenanceStatus) => {
+    const { error } = await supabase.from("vehicles").update({ maintenance_status: status }).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Status updated");
+      queryClient.invalidateQueries({ queryKey: ["driver-vehicles"] });
+    }
+  };
+
+  const goodCount = vehicles?.filter(v => v.maintenance_status === "good").length || 0;
+  const needsServiceCount = vehicles?.filter(v => v.maintenance_status === "needs_service").length || 0;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar variant="driver" userName={profile?.full_name || "Driver"} />
+      <main className="max-w-6xl mx-auto p-6">
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold font-heading">Vehicle Maintenance</h1>
+              <p className="text-muted-foreground mt-1">Monitor and update your vehicle health status.</p>
+            </div>
+            <Button className="gradient-primary" onClick={() => navigate("/driver/vehicles")}>
+              <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+            </Button>
           </div>
-          <Button className="gradient-primary"><Plus className="mr-2 h-4 w-4" /> Log New Service</Button>
-        </div>
 
-        {/* Alert Banner */}
-        <div className="glass-card p-4 mb-6 flex items-center gap-3 border-l-4 border-warning">
-          <AlertTriangle className="h-6 w-6 text-warning" />
-          <div>
-            <p className="text-sm font-bold text-warning uppercase">Upcoming Maintenance Reminder</p>
-            <p className="text-sm text-muted-foreground">Your vehicle is due for a 50,000km major inspection. Approximately 3 days remaining before recommended date.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <StatCard label="Total Vehicles" value={String(vehicles?.length || 0)} icon={<Bus className="h-5 w-5" />} />
+            <StatCard label="Good Condition" value={String(goodCount)} icon={<Gauge className="h-5 w-5" />} trendColor="success" />
+            <StatCard label="Needs Service" value={String(needsServiceCount)} icon={<Wrench className="h-5 w-5" />} trendColor="destructive" />
           </div>
-          <Button variant="outline" size="sm" className="ml-auto">Dismiss</Button>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Total Mileage" value="45,200 km" icon={<Gauge className="h-5 w-5" />} trend="+5.2% this month" />
-          <StatCard label="Last Service" value="12 Days Ago" icon={<Wrench className="h-5 w-5" />} />
-          <StatCard label="Monthly Spend" value="GH₵ 1,250" icon={<Wrench className="h-5 w-5" />} trend="+12% vs last month" trendColor="destructive" />
-        </div>
-
-        {/* Vehicle Health */}
-        <h2 className="text-xl font-bold font-heading mb-4">Vehicle Health Status</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {healthItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.name} className="glass-card p-6 text-center">
-                <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3">
-                  <Icon className="h-8 w-8 text-muted-foreground" />
+          {isLoading ? (
+            <p className="text-muted-foreground text-center p-8">Loading vehicles...</p>
+          ) : !vehicles?.length ? (
+            <div className="glass-card p-12 text-center">
+              <Bus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">No vehicles registered yet.</p>
+              <Button className="gradient-primary" onClick={() => navigate("/driver/vehicles")}>
+                Register Vehicle
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {vehicles.map((v) => (
+                <div key={v.id} className="glass-card p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Bus className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg">{v.make} {v.model || ""}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {v.plate_number} • {v.vehicle_type} • {v.capacity} seats
+                          {v.year ? ` • ${v.year}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Select value={v.maintenance_status} onValueChange={(val) => handleStatusUpdate(v.id, val as MaintenanceStatus)}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="needs_service">Needs Service</SelectItem>
+                          <SelectItem value="in_repair">In Repair</SelectItem>
+                          <SelectItem value="decommissioned">Decommissioned</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-                <p className="font-bold text-sm">{item.name}</p>
-                <p className={`text-xs font-semibold ${item.color}`}>{item.status}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Service History */}
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold font-heading">Service History</h3>
-            <span className="text-primary text-sm cursor-pointer hover:underline flex items-center gap-1">
-              <Download className="h-4 w-4" /> Export Report
-            </span>
-          </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="text-left pb-3">Date</th>
-                <th className="text-left pb-3">Service Type</th>
-                <th className="text-left pb-3">Provider</th>
-                <th className="text-left pb-3">Mileage</th>
-                <th className="text-right pb-3">Cost</th>
-                <th className="text-center pb-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {serviceHistory.map((s, i) => (
-                <tr key={i} className="border-b border-border/50">
-                  <td className="py-4 text-sm font-semibold">{s.date}</td>
-                  <td className="py-4">
-                    <p className="text-sm font-semibold">{s.type}</p>
-                    <p className="text-xs text-muted-foreground">{s.sub}</p>
-                  </td>
-                  <td className="py-4 text-sm text-muted-foreground">{s.provider}</td>
-                  <td className="py-4 text-sm">{s.mileage}</td>
-                  <td className="py-4 text-right font-bold text-sm text-success">{s.cost}</td>
-                  <td className="py-4 text-center">
-                    <Badge className="bg-success/20 text-success border-0">COMPLETED</Badge>
-                  </td>
-                </tr>
               ))}
-            </tbody>
-          </table>
-          <p className="text-center text-muted-foreground text-sm mt-4 cursor-pointer hover:text-foreground">View All History (24 Entries)</p>
-        </div>
-      </motion.div>
-    </main>
-  </div>
-);
+            </div>
+          )}
+        </motion.div>
+      </main>
+    </div>
+  );
+};
 
 export default VehicleMaintenance;

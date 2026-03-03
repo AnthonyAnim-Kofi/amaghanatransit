@@ -20,9 +20,10 @@ const passengerLinks = [
 
 const driverLinks = [
   { to: "/driver/dashboard", label: "Dashboard" },
+  { to: "/driver/vehicles", label: "Vehicles" },
   { to: "/driver/earnings", label: "Earnings" },
   { to: "/driver/routes", label: "Routes" },
-  { to: "/driver/maintenance", label: "Vehicle Log" },
+  { to: "/driver/maintenance", label: "Maintenance" },
   { to: "/driver/settings", label: "Settings" },
 ];
 

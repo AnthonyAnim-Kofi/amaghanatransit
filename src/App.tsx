@@ -13,11 +13,12 @@ import TripHistory from "./pages/passenger/TripHistory";
 import ActiveBookings from "./pages/passenger/Bookings";
 import WalletPage from "./pages/passenger/Wallet";
 import TrackTrip from "./pages/passenger/TrackTrip";
+import SearchTrips from "./pages/passenger/SearchTrips";
 import DriverDashboard from "./pages/driver/Dashboard";
 import DriverEarnings from "./pages/driver/Earnings";
 import DriverRoutes from "./pages/driver/Routes";
 import CreateTrip from "./pages/driver/CreateTrip";
-import SearchTrips from "./pages/passenger/SearchTrips";
+import VehicleRegistration from "./pages/driver/Vehicles";
 import VehicleMaintenance from "./pages/driver/Maintenance";
 import DriverSettings from "./pages/driver/Settings";
 import NotFound from "./pages/NotFound";
@@ -46,11 +47,11 @@ const App = () => (
             {/* Driver Routes */}
             <Route path="/driver/dashboard" element={<ProtectedRoute requiredRole="driver"><DriverDashboard /></ProtectedRoute>} />
             <Route path="/driver/create-trip" element={<ProtectedRoute requiredRole="driver"><CreateTrip /></ProtectedRoute>} />
+            <Route path="/driver/vehicles" element={<ProtectedRoute requiredRole="driver"><VehicleRegistration /></ProtectedRoute>} />
             <Route path="/driver/earnings" element={<ProtectedRoute requiredRole="driver"><DriverEarnings /></ProtectedRoute>} />
             <Route path="/driver/routes" element={<ProtectedRoute requiredRole="driver"><DriverRoutes /></ProtectedRoute>} />
             <Route path="/driver/maintenance" element={<ProtectedRoute requiredRole="driver"><VehicleMaintenance /></ProtectedRoute>} />
             <Route path="/driver/settings" element={<ProtectedRoute requiredRole="driver"><DriverSettings /></ProtectedRoute>} />
-            <Route path="/driver/settings/*" element={<ProtectedRoute requiredRole="driver"><DriverSettings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
