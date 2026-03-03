@@ -89,7 +89,7 @@ const ActiveBookings = () => {
             </div>
             {b.status === "confirmed" && (
               <div className="flex gap-3 mt-6">
-                <Button variant="outline" onClick={() => navigate("/passenger/track")}>
+                <Button variant="outline" onClick={() => navigate(`/passenger/track?id=${b.trip_id}`)}>
                   <MapPin className="mr-2 h-4 w-4" /> Track Trip
                 </Button>
                 <Button variant="ghost" className="text-destructive" onClick={() => handleCancel(b.id)}>
