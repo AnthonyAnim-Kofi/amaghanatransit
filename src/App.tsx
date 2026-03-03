@@ -3,11 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import PassengerDashboard from "./pages/passenger/Dashboard";
 import TripHistory from "./pages/passenger/TripHistory";
 import ActiveBookings from "./pages/passenger/Bookings";
 import WalletPage from "./pages/passenger/Wallet";
+import TrackTrip from "./pages/passenger/TrackTrip";
 import DriverDashboard from "./pages/driver/Dashboard";
 import DriverEarnings from "./pages/driver/Earnings";
 import DriverRoutes from "./pages/driver/Routes";
@@ -23,23 +28,28 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          {/* Passenger Routes */}
-          <Route path="/passenger/dashboard" element={<PassengerDashboard />} />
-          <Route path="/passenger/book" element={<PassengerDashboard />} />
-          <Route path="/passenger/history" element={<TripHistory />} />
-          <Route path="/passenger/bookings" element={<ActiveBookings />} />
-          <Route path="/passenger/wallet" element={<WalletPage />} />
-          {/* Driver Routes */}
-          <Route path="/driver/dashboard" element={<DriverDashboard />} />
-          <Route path="/driver/earnings" element={<DriverEarnings />} />
-          <Route path="/driver/routes" element={<DriverRoutes />} />
-          <Route path="/driver/maintenance" element={<VehicleMaintenance />} />
-          <Route path="/driver/settings" element={<DriverSettings />} />
-          <Route path="/driver/settings/*" element={<DriverSettings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            {/* Passenger Routes */}
+            <Route path="/passenger/dashboard" element={<ProtectedRoute requiredRole="passenger"><PassengerDashboard /></ProtectedRoute>} />
+            <Route path="/passenger/book" element={<ProtectedRoute requiredRole="passenger"><PassengerDashboard /></ProtectedRoute>} />
+            <Route path="/passenger/history" element={<ProtectedRoute requiredRole="passenger"><TripHistory /></ProtectedRoute>} />
+            <Route path="/passenger/bookings" element={<ProtectedRoute requiredRole="passenger"><ActiveBookings /></ProtectedRoute>} />
+            <Route path="/passenger/wallet" element={<ProtectedRoute requiredRole="passenger"><WalletPage /></ProtectedRoute>} />
+            <Route path="/passenger/track" element={<ProtectedRoute requiredRole="passenger"><TrackTrip /></ProtectedRoute>} />
+            {/* Driver Routes */}
+            <Route path="/driver/dashboard" element={<ProtectedRoute requiredRole="driver"><DriverDashboard /></ProtectedRoute>} />
+            <Route path="/driver/earnings" element={<ProtectedRoute requiredRole="driver"><DriverEarnings /></ProtectedRoute>} />
+            <Route path="/driver/routes" element={<ProtectedRoute requiredRole="driver"><DriverRoutes /></ProtectedRoute>} />
+            <Route path="/driver/maintenance" element={<ProtectedRoute requiredRole="driver"><VehicleMaintenance /></ProtectedRoute>} />
+            <Route path="/driver/settings" element={<ProtectedRoute requiredRole="driver"><DriverSettings /></ProtectedRoute>} />
+            <Route path="/driver/settings/*" element={<ProtectedRoute requiredRole="driver"><DriverSettings /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
