@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import AppSidebar from "@/components/AppSidebar";
 import StatCard from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { LayoutDashboard, DollarSign, Wrench, Settings, Star, MapPin, Phone, Bus } from "lucide-react";
+import { LayoutDashboard, DollarSign, Wrench, Settings, Star, MapPin, Phone, Bus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 
 const sidebarLinks = [
@@ -22,6 +23,7 @@ const bookingRequests = [
 
 const DriverDashboard = () => {
   const [accepting, setAccepting] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,6 +63,9 @@ const DriverDashboard = () => {
                   <Badge className="bg-success/20 text-success border-0">ONLINE</Badge>
                 </div>
                 <p className="text-xs uppercase tracking-wider text-primary mt-1">VIP SERVICE • ACCRA</p>
+                <Button className="gradient-primary mt-3" onClick={() => navigate("/driver/create-trip")}>
+                  <Plus className="mr-2 h-4 w-4" /> Create New Trip
+                </Button>
               </div>
             </div>
 

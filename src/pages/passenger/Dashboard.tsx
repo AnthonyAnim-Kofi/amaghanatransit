@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import AppSidebar from "@/components/AppSidebar";
 import StatCard from "@/components/StatCard";
@@ -20,6 +21,7 @@ const recentTrips = [
 
 const PassengerDashboard = () => {
   const [rideType, setRideType] = useState<"bus" | "taxi">("bus");
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,8 +112,8 @@ const PassengerDashboard = () => {
                 </div>
               </div>
 
-              <Button className="w-full gradient-primary font-semibold py-6 text-base">
-                Check Fare & Book <ArrowRight className="ml-2 h-5 w-5" />
+              <Button className="w-full gradient-primary font-semibold py-6 text-base" onClick={() => navigate("/passenger/search")}>
+                Search Available Trips <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Current Fare Estimate: <span className="font-bold text-foreground">GH₵ 110.00 - GH₵ 140.00</span>
