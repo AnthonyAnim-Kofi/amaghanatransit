@@ -57,7 +57,7 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
                 <div className="p-6 border-b border-border">
                   <div className="flex items-center gap-2 mb-4">
                     <Bus className="h-6 w-6 text-primary" />
-                    <span className="text-lg font-bold font-heading">Transport Ghana</span>
+                    <span className="text-lg font-bold font-heading">AMA Ghana Transit</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -100,7 +100,7 @@ const Navbar = ({ variant, userName }: NavbarProps) => {
 
           <Link to="/" className="flex items-center gap-2">
             <Bus className="h-7 w-7 text-primary" />
-            <span className="text-lg font-bold font-heading hidden sm:block">Transport Ghana</span>
+            <span className="text-lg font-bold font-heading hidden sm:block">AMA Ghana Transit</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">

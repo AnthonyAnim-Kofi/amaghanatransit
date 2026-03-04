@@ -24,7 +24,7 @@ const Landing = () => {
       <nav className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Bus className="h-7 w-7 text-primary" />
-          <span className="text-lg font-bold font-heading">Transport Ghana</span>
+          <span className="text-lg font-bold font-heading">AMA Ghana Transit</span>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
           <Link to="/auth">
@@ -116,7 +116,7 @@ const Landing = () => {
 
       <footer className="border-t border-border py-6 px-4 md:px-6">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <span>© 2026 Transport Ghana Inc.</span>
+          <span>© 2026 AMA Ghana Transit</span>
           <div className="flex gap-6">
             <span className="hover:text-foreground cursor-pointer">About Us</span>
             <span className="hover:text-foreground cursor-pointer">Terms of Service</span>
