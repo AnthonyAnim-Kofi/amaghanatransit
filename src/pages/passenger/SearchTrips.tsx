@@ -27,7 +27,7 @@ const SearchTrips = () => {
   const [selectedSeat, setSelectedSeat] = useState("");
   const [bookingLoading, setBookingLoading] = useState(false);
 
-  // Fetch ALL available trips, always enabled
+  // Fetch all scheduled trips with available seats
   const { data: trips, isLoading } = useQuery({
     queryKey: ["available-trips"],
     queryFn: async () => {
@@ -36,8 +36,8 @@ const SearchTrips = () => {
         .select("*")
         .eq("status", "scheduled")
         .gt("seats_available", 0)
-        .gte("departure_time", new Date().toISOString())
         .order("departure_time", { ascending: true });
+
       if (error) throw error;
       return data;
     },
